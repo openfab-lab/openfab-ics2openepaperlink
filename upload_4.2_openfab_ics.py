@@ -9,9 +9,8 @@ from ics import Calendar
 from datetime import date, timedelta
 
 NRDATES = 7
-# DEBUG if ics does not contain enough future events
-DEBUG_PAST_DAYS = 30
-DEBUG_PAST_DAYS = int(sys.argv[2])
+# DEBUG go back X days in the past if ics does not contain enough future events, 0 to disable
+DEBUG_PAST_DAYS = 0
 mac = "000002CAFCFB483C"   # destination mac address
 dither = 0   # set dither to 1 is you're sending photos etc
 apip = "192.168.10.169"   # ip address of your access point
@@ -98,7 +97,7 @@ rgb_image.save(image_path, 'JPEG', quality="maximum")
 
 if dummy:
     im = Image.open(image_path)
-    f = 8
+    f = 4
     im = im.resize((im.width * f, im.height * f), Image.NEAREST)
     im.show()
     exit()
