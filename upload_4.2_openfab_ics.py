@@ -7,7 +7,8 @@ import requests
 import subprocess
 from PIL import Image, ImageDraw, ImageFont
 from ics import Calendar
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
+from dateutil import tz
 
 NRDATES = 7
 # DEBUG go back X days in the past if ics does not contain enough future events, 0 to disable
@@ -16,6 +17,7 @@ VERBOSE = True
 mac = "000002CAFCFB483C"   # destination mac address
 dither = 0   # set dither to 1 is you're sending photos etc
 apip = "192.168.10.169"   # ip address of your access point
+target_timezone = tz.gettz('Europe/Brussels')
 
 dummy = False
 if len(sys.argv) > 1 and sys.argv[1] == '-n':
@@ -33,6 +35,10 @@ days_to_last_monday = (today.weekday() - 0) % 7  # 0 represents Monday
 # Subtract the calculated days to get the last Monday
 last_monday = today - timedelta(days=days_to_last_monday)
 
+if VERBOSE:
+    current_datetime = datetime.now().astimezone(target_timezone)
+    print(current_datetime.strftime("%Y-%m-%d %H:%M:%S: "), end='')
+
 # Parse the URL
 url = "https://calendar.google.com/calendar/ical/c_fle7ng3r3tkmgat1s95o9bu810%40group.calendar.google.com/public/basic.ics"
 cal = Calendar(requests.get(url).text)
@@ -49,9 +55,9 @@ else:
 # Define the text lines
 lines = []
 for x in next_nrevents:
-    d = dfr[x.begin.datetime.strftime("%A")]
-    db = x.begin.datetime.strftime("%d/%m %H:%M-")
-    de = x.end.datetime.strftime("%H:%M")
+    d = dfr[x.begin.datetime.astimezone(target_timezone).strftime("%A")]
+    db = x.begin.datetime.astimezone(target_timezone).strftime("%d/%m %H:%M-")
+    de = x.end.datetime.astimezone(target_timezone).strftime("%H:%M")
     lines.append((d, db+de))
 
 saved_text = ""
