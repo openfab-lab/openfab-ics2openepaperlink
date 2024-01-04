@@ -37,7 +37,7 @@ last_monday = today - timedelta(days=days_to_last_monday)
 
 if VERBOSE:
     current_datetime = datetime.now().astimezone(target_timezone)
-    print(current_datetime.strftime("%Y-%m-%d %H:%M:%S: "), end='')
+    print(current_datetime.strftime("%Y-%m-%d %H:%M:%S: "))
 
 # Parse the URL
 url = "https://calendar.google.com/calendar/ical/c_fle7ng3r3tkmgat1s95o9bu810%40group.calendar.google.com/public/basic.ics"
@@ -73,6 +73,9 @@ if text == saved_text:
     if VERBOSE:
         print("No change, exit")
     exit()
+
+if VERBOSE:
+    print(text)
 
 # Define the fonts and sizes
 # font34 = ImageFont.truetype('fonts/UbuntuMono-Regular.ttf', size=34)
