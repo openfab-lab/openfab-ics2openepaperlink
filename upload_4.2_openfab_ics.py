@@ -9,6 +9,19 @@ from PIL import Image, ImageDraw, ImageFont
 from ics import Calendar
 from datetime import date, datetime, timedelta
 from dateutil import tz
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
+
+# Email configuration
+sender_email = "<TODO>"
+receiver_email = "<TODO>"
+smtp_server = "smtp.gmail.com"
+smtp_port = 587
+smtp_username = sender_email
+smtp_password = "<TODO>"
 
 NRDATES = 7
 # DEBUG go back X days in the past if ics does not contain enough future events, 0 to disable
@@ -35,8 +48,8 @@ days_to_last_monday = (today.weekday() - 0) % 7  # 0 represents Monday
 # Subtract the calculated days to get the last Monday
 last_monday = today - timedelta(days=days_to_last_monday)
 
+current_datetime = datetime.now().astimezone(target_timezone)
 if VERBOSE:
-    current_datetime = datetime.now().astimezone(target_timezone)
     print(current_datetime.strftime("%Y-%m-%d %H:%M:%S: "))
 
 # Parse the URL
@@ -143,6 +156,31 @@ try:
             print("Image uploaded successfully!")
         with open('current.txt', 'w') as file:
             file.write(text)
+
+        # Create the MIME object
+        msg = MIMEMultipart()
+        msg["From"] = sender_email
+        msg["To"] = receiver_email
+        msg["Subject"] = "Update des permanences"
+        body = "cf attachement"
+        msg.attach(MIMEText(body, "plain"))
+
+        # Attach the file
+        attachment = open(image_path, "rb")
+        part = MIMEBase("application", "octet-stream")
+        part.set_payload(attachment.read())
+        encoders.encode_base64(part)
+        attachment_name = f'permanences_{current_datetime.strftime("%Y%m%d_%H%M%S")}.jpg'
+        part.add_header("Content-Disposition", f"attachment; filename={attachment_name}")
+        msg.attach(part)
+
+        # Connect to the Gmail SMTP server
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_username, smtp_password)
+            server.sendmail(sender_email, receiver_email, msg.as_string())
+        if VERBOSE:
+            print("Email sent successfully")
     else:
         if VERBOSE:
             print("Failed to upload the image.")
